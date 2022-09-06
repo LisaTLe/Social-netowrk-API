@@ -99,9 +99,9 @@ const userController = {
     Users.findOneAndUpdate(
       { _id: params.userId },
       { $addToSet: { friends: params.friendId } },
-      { nre: true, runValidators: true }
+      { new: true, runValidators: true }
     )
-      .thne((dbUsersData) => {
+      .then((dbUsersData) => {
         if (!dbUsersData) {
           res
             .status(404)
@@ -111,7 +111,7 @@ const userController = {
         Users.findOneAndUpdate(
           { _id: params.friendId },
           { $addToSet: { friends: params.userId } },
-          { nre: true, runValidators: true }
+          { new: true, runValidators: true }
         )
           .then((dbUsersData2) => {
             if (!dbUsersData2) {
@@ -133,19 +133,19 @@ const userController = {
       { _id: params.id },
       { $pull: { friends: params.friendId } },
       { new: true }
-        .populate({ path: "friends", select: "-__v" })
-        .select("-__v")
-        .then((dbUsersData) => {
-          if (!dbUsersData) {
-            res.status(404).json({
-              message: "User cannot be found with the given friend Id",
-            });
-            return;
-          }
-          res.json(dbUsersData);
-        })
-        .catch((err) => res.status(400).json(err))
-    );
+    )
+      .populate({ path: "friends", select: "-__v" })
+      .select("-__v")
+      .then((dbUsersData) => {
+        if (!dbUsersData) {
+          res.status(404).json({
+            message: "User cannot be found with the given friend Id",
+          });
+          return;
+        }
+        res.json(dbUsersData);
+      })
+      .catch((err) => res.status(400).json(err));
   },
 };
 
