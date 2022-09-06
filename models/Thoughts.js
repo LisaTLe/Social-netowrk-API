@@ -34,7 +34,7 @@ const ReactionSchema = new Schema(
 //Thought Schema
 const ThoughtSchema = new Schema(
   {
-    thought_text: {
+    thoughtText: {
       type: String,
       required: true,
       minlength: 1,
@@ -62,7 +62,7 @@ const ThoughtSchema = new Schema(
 );
 
 //count of thoughts
-ThoughtSchema.virtual("countReaction").get(function () {
+ThoughtSchema.virtual("reactionCount").get(function () {
   return this.reactions.length;
 });
 
