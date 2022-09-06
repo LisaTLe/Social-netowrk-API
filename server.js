@@ -1,5 +1,5 @@
 const express = require("express");
-const routes = require("./routes");
+
 const db = require("./config/connection");
 const mongoose = require("mongoose");
 
@@ -11,7 +11,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(express.static("public"));
 
-app.use(require(routes));
+app.use(require("./routes"));
 
 // db.once("open", () => {
 //   app.listen(PORT, () => {
