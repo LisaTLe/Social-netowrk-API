@@ -1,6 +1,6 @@
 const router = require("express").Router();
 
-const { Router } = require("express");
+// const { Router } = require("express");
 //all requirements from user-controller.js
 const {
   getAllUsers,
@@ -16,7 +16,7 @@ const {
 router.route("/").get(getAllUsers).post(createUsers);
 
 //set up for GET, PUT and DELETE routes for /api/users/:id
-router.route("/:id").get(getUsersById).post(updateUsers).delete(deleteUsers);
+router.route("/:id").get(getUsersById).put(updateUsers).delete(deleteUsers);
 
 //set up for POST and DELETE routes for /api/users/:userid/friends/:friendId
 router.route("/:id/friends/:friendId").post(addFriend).delete(deleteFriend);
