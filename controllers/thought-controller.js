@@ -2,61 +2,45 @@ const { Users, Thoughts } = require("../models");
 
 const thoughtController = {
   //create new thought
-  createThoughts({ params, body }, res) {
+  createThoughts({ body }, res) {
     Thoughts.create(body)
-      .then(({ _id }) => {
+      .then((dbThoughtData) => {
         return Users.findOneAndUpdate(
-          { _id: params.userId },
-          { $push: { thoughts: _id } },
+          { _id: body.userId },
+          { $push: { thoughts: dbThoughtData._id } },
           { new: true }
         );
       })
-      .then((dbThoughtData) => {
-        if (!dbThoughtData) {
+      .then((dbUserData) => {
+        if (!dbUserData) {
           res
             .status(404)
             .json({ message: "No thought was found with the given ID" });
           return;
         }
-        res.json(dbThoughtData);
+        res.json(dbUserData);
       })
       .catch((err) => res.json(err));
-    // Users.findOneAndUpdate(
-    //   { _id: body.userId },
-    //   { $push: { thoughts: dbThoughtData._id } },
-    //   { new: true }
-    // )
-    //   .then((dbUserData) => {
-    //     if (!dbUserData) {
-    //       res
-    //         .status(404)
-    //         .json({ message: "No user was found with the given ID" });
-    //       return;
-    //     }
-    //     res.json(dbUserData);
-    //   })
-    //   .catch((err) => res.json(err));
-    //   })
-    //   .catch((err) => res.status(400).json(err));
   },
 
   //GET request for all thoughts
   getAllThoughts(req, res) {
     Thoughts.find({})
       .populate({ path: "reactions", select: "-__v" })
+      .populate({ path: "thoughts", select: "-__v" })
       .select("-__v")
       .then((dbThoughtData) => res.json(dbThoughtData))
       .catch((err) => {
         console.log(err);
-        res.status(500).json(err);
+        res.status(400).json(err);
       });
   },
 
   //GET request for thoughts by ID
   getThoughtsById({ params }, res) {
     Thoughts.findOne({ _id: params.id })
-      .populate({ path: "reactions", select: "-__v" })
-      .select("-__v")
+      // .populate({ path: "reactions", select: "-__v" })
+      // .select("-__v")
       .then((dbThoughtData) => {
         if (!dbThoughtData) {
           res
@@ -76,10 +60,9 @@ const thoughtController = {
   updateThoughts({ params, body }, res) {
     Thoughts.findOneAndUpdate({ _id: params.id }, body, {
       new: true,
-      runValidators: true,
     })
-      .populate({ path: "reactions", select: "-__v" })
-      .select("-__v")
+      // .populate({ path: "reactions", select: "-__v" })
+      // .select("-__v")
       .then((dbThoughtData) => {
         if (!dbThoughtData) {
           res
@@ -119,11 +102,11 @@ const thoughtController = {
   addReaction({ params, body }, res) {
     Thoughts.findOneAndUpdate(
       { _id: params.thoughtId },
-      { $push: { reactions: body } },
-      { new: true, runValidators: true }
+      { $addToSet: { reactions: body } },
+      { new: true }
     )
-      .populate({ path: "reactions", select: "-__v" })
-      .select("-__v")
+      // .populate({ path: "reactions", select: "-__v" })
+      // .select("-__v")
       .then((dbThoughtData) => {
         if (!dbThoughtData) {
           res
