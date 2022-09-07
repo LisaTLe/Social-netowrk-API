@@ -1,7 +1,8 @@
 const { Users, Thoughts } = require("../models");
+const { populate } = require("../models/Users");
 
 const userController = {
-  //new user
+  //POST requesr for new user
   createUsers({ body }, res) {
     Users.create(body)
       .then((dbUsersData) => res.json(dbUsersData))
@@ -12,12 +13,13 @@ const userController = {
   getAllUsers(req, res) {
     Users.find({})
       .populate({ path: "thoughts", select: "-__v" })
-      .populate({ path: "friends", select: "-__v" })
+      // .populate({ path: "friends", select: "-__v" })
       .select("-__v")
+      .sort({ _id: -1 })
       .then((dbUsersData) => res.json(dbUsersData))
       .catch((err) => {
         console.log(err);
-        res.status(500).json(err);
+        res.status(400).json(err);
       });
   },
 
@@ -26,7 +28,7 @@ const userController = {
     Users.findOne({ _id: params.id })
       .populate([
         { path: "thoughts", select: "-__v" },
-        { path: "friends", select: "-__v" },
+        // { path: "friends", select: "-__v" },
       ])
       .select("-__v")
       .then((dbUsersData) => {
@@ -44,13 +46,6 @@ const userController = {
       });
   },
 
-  //POST for users
-  createUsers({ body }, res) {
-    Users.create(body)
-      .then((dbUsersData) => res.json(dbUsersData))
-      .catch((err) => res.status(400).json(err));
-  },
-
   //PUT request for users by ID
   updateUsers({ params, body }, res) {
     Users.findOneAndUpdate({ _id: params.id }, body, {
@@ -66,7 +61,7 @@ const userController = {
         }
         res.json(dbUsersData);
       })
-      .catch((err) => res.json(err));
+      .catch((err) => res.status(400).json(err));
   },
 
   //DELETE request for users by ID
@@ -100,8 +95,8 @@ const userController = {
   //POST request for friends
   addFriend({ params }, res) {
     Users.findOneAndUpdate(
-      { _id: params.userId },
-      { $push: { friends: params.friendId } },
+      { _id: params.id },
+      { $addToSet: { friends: params.friendsId } },
       { new: true, runValidators: true }
     )
       .then((dbUsersData) => {
@@ -135,11 +130,11 @@ const userController = {
   deleteFriend({ params }, res) {
     Users.findOneAndUpdate(
       { _id: params.id },
-      { $pull: { friends: params.friendId } },
+      { $pull: { friends: params.friendsId } },
       { new: true }
     )
-      .populate({ path: "friends", select: "-__v" })
-      .select("-__v")
+      // .populate({ path: "friends", select: "-__v" })
+      // .select("-__v")
       .then((dbUsersData) => {
         if (!dbUsersData) {
           res.status(404).json({
