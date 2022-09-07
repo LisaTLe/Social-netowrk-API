@@ -1,6 +1,4 @@
 const express = require("express");
-
-const db = require("./config/connection");
 const mongoose = require("mongoose");
 
 const app = express();
@@ -20,7 +18,7 @@ app.use(require("./routes"));
 // });
 
 mongoose.connect(
-  process.env.MONODB_URI || "mongodb://localhost/social-network-API",
+  process.env.MONODB_URI || "mongodb://localhost/social-network-api",
   {
     useFindAndModify: false,
     useNewUrlParser: true,
