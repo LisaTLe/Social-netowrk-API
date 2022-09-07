@@ -11,6 +11,8 @@ const userController = {
   //get all users
   getAllUsers(req, res) {
     Users.find({})
+      .populate({ path: "thoughts", select: "-__v" })
+      .populate({ path: "friends", select: "-__v" })
       .select("-__v")
       .then((dbUsersData) => res.json(dbUsersData))
       .catch((err) => {
@@ -30,7 +32,7 @@ const userController = {
       .then((dbUsersData) => {
         if (!dbUsersData) {
           res
-            .status(400)
+            .status(404)
             .json({ message: "No user was found with the given ID" });
           return;
         }
@@ -38,7 +40,7 @@ const userController = {
       })
       .catch((err) => {
         console.log(err);
-        res.status(500).json(err);
+        res.status(400).json(err);
       });
   },
 
@@ -64,7 +66,7 @@ const userController = {
         }
         res.json(dbUsersData);
       })
-      .catch((err) => res.status(400).json(err));
+      .catch((err) => res.json(err));
   },
 
   //DELETE request for users by ID
@@ -73,23 +75,24 @@ const userController = {
       .then((dbUsersData) => {
         if (!dbUsersData) {
           res
-            .status(400)
+            .status(404)
             .json({ message: "No user was found with the given ID" });
           return;
         }
+        res.json(dbUsersData);
         //clear user with this id that are in friends array and also existing comments made by user
-        Users.updateMany(
-          { _id: { $in: dbUsersData.friends } },
-          { $pull: { friends: params.id } }
-        )
-          .then(() => {
-            Thoughts.deleteMany({ username: dbUsersData.username })
-              .then(() => {
-                res, json({ message: "User was successfully deleted" });
-              })
-              .catch((err) => res.status(400).json(err));
-          })
-          .catch((err) => res.status(400).json(err));
+        //     Users.updateMany(
+        //       { _id: { $in: dbUsersData.friends } },
+        //       { $pull: { friends: params.id } }
+        //     )
+        //       .then(() => {
+        //         Thoughts.deleteMany({ username: dbUsersData.username })
+        //           .then(() => {
+        //             res, json({ message: "User was successfully deleted" });
+        //           })
+        //           .catch((err) => res.status(400).json(err));
+        //       })
+        //       .catch((err) => res.status(400).json(err));
       })
       .catch((err) => res.status(400).json(err));
   },
@@ -98,7 +101,7 @@ const userController = {
   addFriend({ params }, res) {
     Users.findOneAndUpdate(
       { _id: params.userId },
-      { $addToSet: { friends: params.friendId } },
+      { $push: { friends: params.friendId } },
       { new: true, runValidators: true }
     )
       .then((dbUsersData) => {
@@ -108,21 +111,22 @@ const userController = {
             .json({ message: "No user can be found with the given ID" });
           return;
         }
-        Users.findOneAndUpdate(
-          { _id: params.friendId },
-          { $addToSet: { friends: params.userId } },
-          { new: true, runValidators: true }
-        )
-          .then((dbUsersData2) => {
-            if (!dbUsersData2) {
-              res.status(404).json({
-                message: "No user can be found with the given friend ID",
-              });
-              return;
-            }
-            res.json(dbUsersData);
-          })
-          .catch((err) => res.json(err));
+        res.json(dbUsersData);
+        // Users.findOneAndUpdate(
+        //   { _id: params.friendId },
+        //   { $addToSet: { friends: params.userId } },
+        //   { new: true, runValidators: true }
+        // )
+        //   .then((dbUsersData2) => {
+        //     if (!dbUsersData2) {
+        //       res.status(404).json({
+        //         message: "No user can be found with the given friend ID",
+        //       });
+        //       return;
+        //     }
+        //     res.json(dbUsersData);
+        //   })
+        //   .catch((err) => res.json(err));
       })
       .catch((err) => res.json(err));
   },
